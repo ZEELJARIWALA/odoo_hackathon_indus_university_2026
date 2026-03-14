@@ -1,555 +1,606 @@
-# 🏭 CoreInventory - Inventory Management System
+# CoreInventory - Inventory Management System
 
 **Hackathon:** Odoo Hackathon - Indus University 2026  
 **Team:** ZEEL JARIWALA  
 **Duration:** 4 Weeks (March 10 - April 7, 2026)  
-**Current Status:** MVP Development Phase
+**Current Status:** MVP Development Phase  
+**Technology Stack:** Python (Flask) + React + MySQL (XAMPP)
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
+
 1. [Project Overview](#project-overview)
 2. [Problem Statement](#problem-statement)
 3. [Solution & Unique Features](#solution--unique-features)
-4. [MVP Architecture](#mvp-architecture)
-5. [Development Timeline](#development-timeline)
-6. [Tech Stack](#tech-stack)
+4. [Technology Stack](#technology-stack)
+5. [Project Architecture](#project-architecture)
+6. [Development Timeline](#development-timeline)
 7. [Project Structure](#project-structure)
-8. [Getting Started](#getting-started)
-9. [Contributing](#contributing)
+8. [Setup Instructions](#setup-instructions)
+9. [API Documentation](#api-documentation)
+10. [Contributing](#contributing)
 
 ---
 
-## 🎯 Project Overview
+## Project Overview
 
-**CoreInventory** is a modular, scalable Inventory Management System (IMS) that digitizes and streamlines all stock-related operations within a business. It replaces manual registers, Excel sheets, and scattered tracking methods with a centralized, real-time, easy-to-use application.
+CoreInventory is a modular, scalable Inventory Management System (IMS) that digitizes and streamlines all stock-related operations within a business. It replaces manual registers, Excel sheets, and scattered tracking methods with a centralized, real-time application.
 
-### **Key Statistics**
-- **Target Users:** Inventory Managers, Warehouse Staff
-- **Scalability:** 1 → 100+ warehouses, 10k+ products
-- **Response Time:** < 500ms
-- **Data Accuracy:** 100% ledger-based audit trail
+### Key Statistics
 
----
-
-## 📍 Problem Statement
-
-### **Business Pain Points**
-- ❌ Fragmented inventory tracking across multiple systems
-- ❌ Manual registers and spreadsheets prone to errors
-- ❌ No real-time visibility into stock levels
-- ❌ Stockouts surprise the business
-- ❌ Overstocking wastes capital
-- ❌ Poor decision-making due to incomplete data
-
-### **Current State**
-```
-Traditional Methods (BROKEN):
-├── Manual Excel sheets → Outdated data
-├── Scattered tracking → No visibility
-├── Error-prone → Costly mistakes
-├── Reactive management → Missed opportunities
-└── No audit trail → Compliance issues
-```
+- **Target Users:** Inventory Managers, Warehouse Staff, Business Owners
+- **Scalability:** 1 to 100+ warehouses, 10,000+ products capacity
+- **Response Time Target:** < 500ms per API call
+- **Data Accuracy:** 100% audit trail with immutable ledger
 
 ---
 
-## ✨ Solution & Unique Features
+## Problem Statement
 
-### **Core Features (Standard)**
-1. ✅ **Authentication** - Sign up, login, OTP reset
-2. ✅ **Dashboard** - Real-time KPIs and snapshots
-3. ✅ **Product Management** - Create/update products with SKU, category, UOM
-4. ✅ **Receipt Operations** - Incoming stock management
-5. ✅ **Delivery Operations** - Outgoing stock management
-6. ✅ **Stock Adjustments** - Physical count reconciliation
-7. ✅ **Multi-Warehouse Support** - Multiple locations
-8. ✅ **Stock Ledger** - Complete audit trail
-9. ✅ **Move History** - In/out tracking
-10. ✅ **Role-Based Access** - Manager/Staff permissions
+### Business Pain Points
 
-### **🌟 UNIQUE FEATURE: Smart Inventory Advisor**
+1. **Fragmented Inventory Tracking**
+   - Multiple systems and spreadsheets
+   - No single source of truth
+   - Data inconsistency across teams
 
-**What Makes Us Different:**
+2. **Manual and Error-Prone Processes**
+   - Paper-based registers
+   - Excel sheet chaos
+   - High mistake rates leading to financial loss
 
-| Competitor | CoreInventory |
-|---|---|
-| ❌ "Your stock is low" | ✅ "Order 300 units NOW - Will stockout in 12 days" |
-| ❌ Manual reorder decisions | ✅ AI suggests optimal order quantity |
-| ❌ Reactive alerts | ✅ Predictive insights |
-| ❌ No waste detection | ✅ Identifies slow-moving inventory |
-| ❌ Reactive management | ✅ Proactive optimization |
+3. **Lack of Real-Time Visibility**
+   - Management cannot see current stock levels instantly
+   - No ability to respond to supply chain issues
+   - Poor forecasting and planning
 
-### **Smart Advisor Capabilities**
+4. **Unplanned Stockouts**
+   - Customer orders cannot be fulfilled
+   - Lost revenue and customer trust
+   - No predictive warning system
 
-#### 1️⃣ **Predictive Stockout Alerts**
+5. **Overstocking Problems**
+   - Excess inventory ties up capital
+   - Waste and spoilage of products
+   - Poor inventory-to-sales ratio
+
+6. **Inefficient Decision Making**
+   - Lack of data-driven insights
+   - No historical analysis or trends
+   - Manual calculations prevent strategic planning
+
+### Current State vs Desired State
+
+**Current (Manual):**
 ```
-⚠️ CRITICAL: Steel Rods
-├─ Current Stock: 180 units
-├─ Daily Consumption: 15 units
-├─ Stockout Prediction: 12 days (March 26)
-├─ Lead Time: 5 days
-└─ Recommended Order: 300 units (TODAY)
-```
-
-#### 2️⃣ **Consumption Analytics**
-```
-For each product:
-├─ Daily/Weekly/Monthly consumption rate
-├─ Trend analysis (↑ increasing, ↓ decreasing, → stable)
-├─ Reorder frequency
-├─ Seasonal patterns
-└─ Optimal safety stock level
+Paper Registers -> Spreadsheets -> Phone Calls -> Guesswork -> Errors
 ```
 
-#### 3️⃣ **Waste Detection**
+**Desired (CoreInventory):**
 ```
-💡 Optimization Alerts:
-├─ Metal Brackets: Zero movement for 45 days
-├─ Current Stock: 500 units
-├─ Cost Impact: $2,500 idle inventory
-└─ Action: Liquidate or return to vendor
-```
-
-#### 4️⃣ **Inventory Health Score**
-```
-Dashboard Metric:
-├─ Inventory Turnover Rate
-├─ Carrying Cost Analysis
-├─ Stock-out Risk Score
-└─ Overall Health: 87/100 (Excellent)
+Real-Time Dashboard -> Data Analytics -> Smart Predictions -> Automated Alerts -> Accuracy
 ```
 
 ---
 
-## 🏗️ MVP Architecture
+## Solution & Unique Features
 
-### **System Design**
+### Core Solution
 
-```
-┌─────────────────────────────────────────────┐
-│             Frontend (React/Vue)             │
-├─────────────────┬──────────────┬────────────┤
-│   Auth Screen   │  Dashboard   │ Operations │
-│                 │     KPIs     │  Receipt   │
-│   Products      │  Analytics   │  Delivery  │
-│   Stock Mgmt    │  Smart      │ Adjustment│
-│                 │  Advisor ⭐  │ Ledger    │
-└────────────────────┬────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────┐
-│        Backend API (Node.js/Express)        │
-├──────────────┬──────────────┬──────────────┤
-│   Auth API   │ Operations   │  Analytics   │
-│   User Mgmt  │   Receipts   │  Forecasting│
-│   Permission │   Deliveries │  Trends ⭐  │
-│              │  Adjustments │ Predictions │
-└──────────────────┬──────────────┬──────────┘
-                   │              │
-       ┌───────────┘              └──────────┐
-       │                                     │
-┌──────▼──────────┐              ┌──────────▼─┐
-│  PostgreSQL DB  │              │ Cache Layer│
-│  ├─ Users       │              │(Redis/RAM) │
-│  ├─ Products    │              │ Analytics  │
-│  ├─ Ledger      │              │ results    │
-│  ├─ Warehouse   │              └────────────┘
-│  └─ Analytics   │
-└─────────────────┘
-```
+CoreInventory provides:
 
-### **Database Schema**
+- Central dashboard with real-time inventory metrics
+- Automated receipt, delivery, and stock adjustment workflows
+- Complete audit trail of all inventory movements
+- Role-based access control (Admin, Manager, Staff)
+- Mobile-responsive interface for warehouse operations
 
-```sql
--- Users
-CREATE TABLE users (
-  id UUID PRIMARY KEY,
-  login_id VARCHAR(12) UNIQUE NOT NULL,
-  email VARCHAR UNIQUE NOT NULL,
-  password_hash VARCHAR NOT NULL,
-  role ENUM('manager', 'staff'),
-  warehouse_id UUID,
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP
-);
+### Unique Differentiator: Smart Inventory Advisor
 
--- Products
-CREATE TABLE products (
-  id UUID PRIMARY KEY,
-  sku VARCHAR UNIQUE NOT NULL,
-  name VARCHAR NOT NULL,
-  category VARCHAR,
-  unit_of_measure VARCHAR,
-  current_stock INT DEFAULT 0,
-  reorder_level INT,
-  warehouse_id UUID,
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP,
-  INDEX(sku, warehouse_id)
-);
+**What Competitors Do:** Show "Stock is low"  
+**What CoreInventory Does:** Predict and recommend
 
--- Stock Ledger (Immutable Audit Trail)
-CREATE TABLE stock_ledger (
-  id UUID PRIMARY KEY,
-  product_id UUID NOT NULL,
-  transaction_type ENUM('receipt', 'delivery', 'adjustment', 'transfer'),
-  quantity INT NOT NULL,
-  from_location VARCHAR,
-  to_location VARCHAR,
-  reference_no VARCHAR,
-  timestamp TIMESTAMP NOT NULL,
-  created_by UUID,
-  reason TEXT,
-  warehouse_id UUID,
-  INDEX(product_id, timestamp)
-);
+The Smart Advisor uses historical consumption data to:
 
--- Warehouse/Locations
-CREATE TABLE warehouses (
-  id UUID PRIMARY KEY,
-  name VARCHAR NOT NULL,
-  location VARCHAR,
-  capacity INT,
-  created_at TIMESTAMP
-);
+**1. Predict Stockout Dates**
+- Analyzes daily consumption rate
+- Factors in lead time from suppliers
+- Warns 14 days before stockout
+- Example: "Widget A will run out on March 26, 2026"
 
--- Analytics Cache (Smart Advisor)
-CREATE TABLE product_analytics (
-  id UUID PRIMARY KEY,
-  product_id UUID UNIQUE NOT NULL,
-  daily_consumption FLOAT,
-  weekly_trend FLOAT,
-  stockout_date DATE,
-  suggested_reorder_qty INT,
-  safety_stock INT,
-  waste_flag BOOLEAN,
-  last_updated TIMESTAMP
-);
-```
+**2. Recommend Optimal Order Quantities**
+- Calculates based on consumption trends
+- Considers reorder point and lead time
+- Minimizes overstocking
+- Example: "Order 150 units now to maintain 30-day buffer"
+
+**3. Detect Waste and Dead Stock**
+- Identifies products with zero movement for 30+ days
+- Calculates potential capital loss
+- Suggests write-off candidates
+- Example: "Device X hasn't moved in 45 days - $5,000 waste potential"
+
+**4. Consumption Trend Analysis**
+- Identifies increasing or decreasing consumption patterns
+- Helps seasonal planning
+- Enables data-driven forecasting
+- Example: "Gadget B consumption increasing 5% weekly"
+
+### MVP Scope
+
+**Phase 1 (Week 1-2):**
+- User authentication (Register, Login, Password reset)
+- Dashboard with real-time KPIs
+- Product management (List, Add, Edit, Delete)
+- Receipt and Delivery operations
+- Stock adjustment for physical counts
+
+**Phase 2 (Week 3):**
+- Smart Advisor analytics engine
+- Stockout prediction algorithm
+- Waste detection system
+- Consumption trend analysis
+- Advanced reporting
+
+**Phase 3 (Week 4):**
+- Performance optimization
+- Load testing (10k+ products)
+- Mobile responsiveness refinement
+- Deployment and final testing
 
 ---
 
-## 📅 Development Timeline (4 Weeks)
+## Technology Stack
 
-### **Week 1: Foundation**
-- [ ] Day 1: Setup, DB design, project structure
-- [ ] Day 2: Authentication API (Login/SignUp/OTP)
-- [ ] Day 3: Dashboard KPI endpoints
-- [ ] Day 4: Product CRUD operations
-- [ ] Day 5: Frontend Auth + Dashboard UI
+### Backend
+- **Framework:** Python Flask 2.3.2
+- **Language:** Python 3.8+
+- **Database:** MySQL 5.7+ (via XAMPP)
+- **ORM:** SQLAlchemy (for database operations)
+- **Authentication:** JWT (JSON Web Tokens)
+- **Password Hashing:** Werkzeug
+- **Database Client:** PyMySQL / MySQL-Connector
 
-### **Week 2: Core Operations**
-- [ ] Day 6-7: Receipt operations (API + UI)
-- [ ] Day 8-9: Delivery operations (API + UI)
-- [ ] Day 10: Stock management endpoints
-
-### **Week 3: Advanced Features**
-- [ ] Day 11: Stock ledger & history
-- [ ] Day 12: Analytics engine (Smart Advisor)
-- [ ] Day 13: Predictive algorithms
-- [ ] Day 14: Multi-location support
-
-### **Week 4: Polish & Launch**
-- [ ] Day 15-16: Performance optimization
-- [ ] Day 17: Security audit
-- [ ] Day 18: Load testing (10k+ products)
-- [ ] Day 19: UI/UX refinement
-- [ ] Day 20: Full system test + deployment
-
----
-
-## 🛠️ Tech Stack
-
-### **Frontend**
-- **Framework:** React 18 / Vue 3
-- **State Management:** Redux / Vuex
-- **UI Components:** Material-UI / Tailwind CSS
-- **Charts:** Chart.js / D3.js
+### Frontend
+- **Framework:** React.js 18.2.0
+- **Styling:** CSS3 + Bootstrap 5
 - **HTTP Client:** Axios
+- **State Management:** React Context API
+- **Build Tool:** Create React App
+- **Routing:** React Router v6
 
-### **Backend**
-- **Runtime:** Node.js (v18+)
-- **Framework:** Express.js
-- **Database:** PostgreSQL 14+
-- **Cache:** Redis (for analytics)
-- **Authentication:** JWT + bcrypt
-- **Validation:** Joi / Yup
+### Development Tools
+- **Version Control:** Git/GitHub
+- **Package Management:** pip (Python), npm (Node.js)
+- **Database GUI:** phpMyAdmin (via XAMPP)
+- **API Testing:** Postman
+- **IDE:** Visual Studio Code
 
-### **DevOps & Deployment**
-- **Version Control:** Git + GitHub
-- **Containerization:** Docker
-- **CI/CD:** GitHub Actions
-- **Cloud:** AWS / GCP / Azure
-- **Monitoring:** Winston (logging)
-
-### **Testing**
-- **Unit Tests:** Jest
-- **API Tests:** Postman / Insomnia
-- **Load Testing:** Apache JMeter
+### Infrastructure
+- **Local Dev:** XAMPP (Apache + MySQL + PHP)
+- **Backend Server:** Flask development server (port 5000)
+- **Frontend Server:** React dev server (port 3000)
+- **Database:** MySQL running via XAMPP
 
 ---
 
-## 📁 Project Structure
+## Project Architecture
+
+### System Architecture Diagram
 
 ```
-CoreInventory/
-├── 📂 backend/
-│   ├── src/
-│   │   ├── middleware/
-│   │   │   └── auth.js
-│   │   ├── routes/
-│   │   │   ├── auth.js
-│   │   │   ├── products.js
-│   │   │   ├── receipts.js
-│   │   │   ├── deliveries.js
-│   │   │   ├── stock.js
-│   │   │   └── analytics.js
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   ├── utils/
-│   │   │   └── analytics.js (Smart Advisor Engine)
-│   │   └── app.js
-│   ├── config/
-│   │   └── database.js
-│   ├── .env.example
-│   ├── package.json
-│   └── README.md
+Frontend (React - Port 3000)
+    |
+    | HTTP/REST API (JSON)
+    |
+Backend (Python Flask - Port 5000)
+    |
+    | SQL Queries
+    |
+Database (MySQL - XAMPP)
+```
+
+### Core Modules
+
+**Backend Structure:**
+```
+api/
+├── app.py                 # Main Flask application
+├── models.py              # Database models
+├── routes.py              # API endpoints
+├── auth.py                # Authentication & JWT logic
+├── smart_advisor.py       # Analytics engine
+├── database.py            # Database connection utilities
+└── requirements.txt       # Python dependencies
+```
+
+**Frontend Structure:**
+```
+frontend/
+├── src/
+│   ├── components/
+│   │   ├── LoginForm.jsx       # Login page component
+│   │   ├── Dashboard.jsx       # Main dashboard
+│   │   ├── ProductList.jsx     # Products table
+│   │   ├── ReceiptForm.jsx     # Receipt operations
+│   │   ├── DeliveryForm.jsx    # Delivery operations
+│   │   └── SmartAdvisor.jsx    # Advisor alerts
+│   ├── services/
+│   │   └── api.js              # API call functions
+│   ├── styles/
+│   │   └── App.css             # Global styles
+│   ├── App.jsx                 # Main app component
+│   └── index.js                # React entry point
+├── package.json                # npm dependencies
+└── public/
+    └── index.html              # HTML template
+```
+
+**Database Structure:**
+```
+MySQL Database: coreinventory
+├── users                  # User accounts and authentication
+├── products               # Product catalog
+├── stock_ledger          # Immutable transaction log
+├── stock_levels          # Current inventory by warehouse
+├── receipts              # Incoming goods records
+├── deliveries            # Outgoing goods records
+├── stock_adjustments     # Physical count reconciliation
+├── transfers             # Inter-warehouse movements
+└── product_analytics     # Smart Advisor metrics
+```
+
+---
+
+## Development Timeline
+
+### Week 1: Foundation (March 15 - March 21)
+
+**Day 1-2: Project Setup**
+- Finalize development environment
+- Setup XAMPP with MySQL
+- Initialize Flask and React projects
+- Configure database connection
+
+**Day 2-3: Authentication**
+- Create User model in database
+- Implement register endpoint
+- Implement login endpoint with JWT
+- Create login/register React components
+
+**Day 4-5: Dashboard and Products**
+- Create Product model in database
+- Build dashboard with KPIs
+- List all products with status
+- Add product creation form
+
+**Friday: Integration Testing**
+- Test authentication flow end-to-end
+- Test product CRUD operations
+- Verify database persistence
+
+### Week 2: Core Operations (March 22 - March 28)
+
+**Receipt Operations**
+- Create Receipt model
+- Build receipt creation endpoint
+- Implement stock level updates
+- Create receipt form in frontend
+
+**Delivery Operations**
+- Create Delivery model
+- Build delivery endpoint with stock validation
+- Prevent over-delivery
+- Create delivery form
+
+**Stock Adjustments**
+- Handle physical count reconciliation
+- Record variance explanations
+- Update stock levels
+
+**Transfers**
+- Inter-warehouse movement tracking
+- Update source and destination warehouses
+
+### Week 3: Smart Advisor (March 29 - April 4)
+
+**Consumption Analytics**
+- Calculate daily consumption rate per product
+- Identify consumption trends
+- Store historical data
+
+**Stockout Prediction**
+- Build prediction algorithm
+- Calculate days until stockout
+- Create warnings for 14-day threshold
+
+**Waste Detection**
+- Identify dead stock (zero movement 30+ days)
+- Calculate waste potential
+- Generate recommendations
+
+**Analytics Dashboard**
+- Display Smart Advisor insights
+- Show risk heat map
+- Display recommendations
+
+### Week 4: Testing and Deployment (April 5 - April 7)
+
+**Testing**
+- Unit tests for prediction algorithms
+- Integration tests for all workflows
+- Load testing with 10k+ products
+- Security audit
+
+**Optimization**
+- Database query optimization
+- API response time optimization
+- Frontend performance tuning
+
+**Final Deployment**
+- Prepare production database
+- Create user documentation
+- Final bug fixes
+
+---
+
+## Project Structure
+
+```
+d:\odoo\
+├── README.md                    # This file
+├── SETUP.md                     # Setup instructions
+├── DATABASE.md                  # Database schema documentation
+├── WORKFLOW.md                  # Development workflow
 │
-├── 📂 frontend/
+├── api/                         # Python Flask Backend
+│   ├── app.py                   # Main Flask application
+│   ├── models.py                # Database models
+│   ├── routes.py                # API routes
+│   ├── auth.py                  # Authentication logic
+│   ├── smart_advisor.py         # Analytics engine
+│   ├── database.py              # DB connection
+│   ├── requirements.txt         # Python dependencies
+│   └── .env.example             # Environment variables template
+│
+├── frontend/                    # React.js Frontend
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Auth/
-│   │   │   ├── Dashboard/
-│   │   │   ├── Operations/
-│   │   │   ├── Products/
-│   │   │   └── Analytics/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   │   └── api.js
-│   │   ├── store/
-│   │   └── App.jsx
-│   ├── .env.example
+│   │   │   ├── LoginForm.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── ProductList.jsx
+│   │   │   ├── ReceiptForm.jsx
+│   │   │   ├── DeliveryForm.jsx
+│   │   │   └── SmartAdvisor.jsx
+│   │   ├── App.jsx
+│   │   └── index.js
 │   ├── package.json
-│   └── README.md
+│   └── public/index.html
 │
-├── 📂 database/
-│   ├── schema.sql
-│   ├── seed.sql
-│   └── migrations/
+├── database/                    # Database files
+│   ├── schema.sql               # MySQL schema
+│   ├── seed_data.sql            # Sample data
+│   └── migrations/              # Database migrations
 │
-├── 📂 docs/
-│   ├── API_DOCUMENTATION.md
-│   ├── DATABASE_SCHEMA.md
-│   ├── DEPLOYMENT_GUIDE.md
-│   └── USER_MANUAL.md
-│
-├── 📂 .github/
-│   ├── workflows/
-│   │   └── ci-cd.yml
-│   └── ISSUE_TEMPLATE.md
-│
-├── .gitignore
-├── docker-compose.yml
-├── README.md (this file)
-└── WORKFLOW.md (detailed dev workflow)
+└── docs/                        # Documentation
+    ├── API_DOCS.md              # API endpoint documentation
+    ├── DATABASE_SCHEMA.md        # Database design
+    └── DEPLOYMENT.md             # Deployment guide
 ```
 
 ---
 
-## 🚀 Getting Started
+## Setup Instructions
 
-### **Prerequisites**
-- Node.js v18+
-- PostgreSQL 14+
-- Git
-- npm or yarn
+### Prerequisites
 
-### **Setup Instructions**
+1. **Python 3.8+**
+   - Download from: https://www.python.org/downloads/
+   - Verify: python --version
 
-#### **1. Clone Repository**
+2. **Node.js and npm**
+   - Download from: https://nodejs.org/ (LTS version)
+   - Verify: node --version and npm --version
+
+3. **XAMPP** (MySQL)
+   - Download from: https://www.apachefriends.org/
+   - Install: Apache, MySQL, PhpMyAdmin
+
+4. **Git**
+   - Download from: https://git-scm.com/
+   - Verify: git --version
+
+### Backend Setup
+
 ```bash
-git clone https://github.com/ZEELJARIWALA/odoo_hackathon_indus_university_2026.git
-cd CoreInventory
+# 1. Navigate to API folder
+cd d:\odoo\api
+
+# 2. Create virtual environment
+python -m venv venv
+
+# 3. Activate virtual environment (Windows)
+venv\Scripts\activate
+
+# 4. Install dependencies
+pip install -r requirements.txt
+
+# 5. Create .env file
+copy .env.example .env
+
+# 6. Update database credentials in .env
+# DB_HOST=localhost
+# DB_USER=root
+# DB_PASSWORD=
+# DB_NAME=coreinventory
+
+# 7. Run Flask server
+python app.py
+
+# Expected output:
+# Running on http://localhost:5000
 ```
 
-#### **2. Setup Backend**
-```bash
-cd backend
-npm install
-cp .env.example .env
-# Edit .env with your database credentials
-npm run dev
-```
+### Frontend Setup
 
-#### **3. Setup Frontend**
 ```bash
-cd frontend
+# 1. Navigate to frontend folder
+cd d:\odoo\frontend
+
+# 2. Install dependencies
 npm install
-cp .env.example .env
+
+# 3. Create .env file (if needed)
+# REACT_APP_API_URL=http://localhost:5000
+
+# 4. Start React development server
 npm start
+
+# Expected output:
+# Compiled successfully!
+# You can now view the app in the browser
 ```
 
-#### **4. Initialize Database**
+### Database Setup
+
 ```bash
-# Run migrations
-psql -U postgres -d coreinventory -f database/schema.sql
-psql -U postgres -d coreinventory -f database/seed.sql
-```
+# 1. Start XAMPP
+# - Open XAMPP Control Panel
+# - Click "Start" for Apache and MySQL
 
-#### **5. Access Application**
-```
-Frontend: http://localhost:3000
-Backend API: http://localhost:5000
-API Docs: http://localhost:5000/api-docs
-```
+# 2. Access phpMyAdmin
+# - Open browser: http://localhost/phpmyadmin
+# - Default login: root (username, no password)
 
----
+# 3. Create database
+# - Click "New" in left panel
+# - Database name: coreinventory
+# - Collation: utf8mb4_unicode_ci
+# - Click "Create"
 
-## 📊 MVP Scope
+# 4. Import schema
+# - Select coreinventory database
+# - Click "Import" tab
+# - Select database/schema.sql
+# - Click "Go"
 
-### **In Scope ✅**
-- Authentication (Login/SignUp/OTP)
-- Dashboard with KPIs
-- Product management (CRUD)
-- Receipt operations
-- Delivery operations
-- Stock adjustments
-- Stock ledger & history
-- Single warehouse (expandable)
-- Smart Inventory Advisor ⭐
-- Role-based access (2 roles)
-
-### **Out of Scope ❌ (Future Releases)**
-- Multi-currency support
-- Advanced reporting (PDF exports)
-- Barcode scanning integration
-- API for 3PL providers
-- Mobile app
-- Advanced predictive ML models
-- Blockchain audit trail
-
----
-
-## 🎯 Success Metrics
-
-| Metric | Target | Current |
-|--------|--------|---------|
-| API Response Time | < 500ms | - |
-| Product load time | < 2s | - |
-| Dashboard refresh | Real-time | - |
-| Data accuracy | 100% | - |
-| Load capacity | 10k+ products | - |
-| User satisfaction | 4.5/5 | - |
-
----
-
-## 🔐 Security Considerations
-
-- ✅ Password hashing (bcrypt)
-- ✅ JWT-based authentication
-- ✅ SQL injection prevention
-- ✅ Role-based access control (RBAC)
-- ✅ Immutable audit trail (ledger)
-- ✅ Environment variables for secrets
-- ✅ HTTPS only in production
-- ✅ Input validation on all endpoints
-
----
-
-## 📝 API Documentation
-
-### **Authentication Endpoints**
-```
-POST /api/auth/register
-POST /api/auth/login
-POST /api/auth/otp-request
-POST /api/auth/otp-verify
-POST /api/auth/reset-password
-```
-
-### **Product Endpoints**
-```
-GET    /api/products
-POST   /api/products
-GET    /api/products/:id
-PUT    /api/products/:id
-DELETE /api/products/:id
-```
-
-### **Operations Endpoints**
-```
-POST   /api/receipts
-GET    /api/receipts
-PUT    /api/receipts/:id/validate
-
-POST   /api/deliveries
-GET    /api/deliveries
-PUT    /api/deliveries/:id/validate
-
-POST   /api/adjustments
-GET    /api/stock
-```
-
-### **Analytics Endpoints (Smart Advisor) ⭐**
-```
-GET    /api/analytics/low-stock
-GET    /api/analytics/forecast
-GET    /api/analytics/waste-detection
-GET    /api/analytics/consumption-trends
-GET    /api/analytics/health-score
+# 5. Verify tables
+# - Check for tables: users, products, stock_ledger, etc.
 ```
 
 ---
 
-## 🤝 Contributing
+## API Documentation
 
-### **Workflow**
-1. Create feature branch: `git checkout -b feature/feature-name`
-2. Make changes
-3. Commit: `git commit -m "feat: description"`
-4. Push: `git push origin feature/feature-name`
-5. Create Pull Request
+### Authentication Endpoints
 
-### **Commit Convention**
+**POST /api/auth/register**
+- Register new user
+- Body: {email: string, password: string, name: string}
+- Response: {message: string, user: {id, email, name}}
+
+**POST /api/auth/login**
+- Login and get JWT token
+- Body: {email: string, password: string}
+- Response: {token: string, user: {id, email, name}}
+
+**POST /api/auth/logout**
+- Logout user
+- Headers: Authorization: Bearer <token>
+- Response: {message: string}
+
+### Dashboard Endpoints
+
+**GET /api/dashboard/kpis**
+- Get dashboard key performance indicators
+- Headers: Authorization: Bearer <token>
+- Response: {totalStockValue, totalItems, lowStockProducts, outOfStockProducts}
+
+**GET /api/products**
+- Get all products
+- Headers: Authorization: Bearer <token>
+- Response: [{id, name, sku, quantity, reorder_point, category}]
+
+**GET /api/dashboard/low-stock**
+- Get low stock products with predictions
+- Headers: Authorization: Bearer <token>
+- Response: [{id, name, sku, quantity, daysUntilStockout, recommendedOrder, risk}]
+
+**GET /api/dashboard/transactions**
+- Get recent transactions
+- Headers: Authorization: Bearer <token>
+- Response: [{id, type, product, quantity, date}]
+
+### Product Endpoints
+
+**POST /api/products**
+- Create new product
+- Headers: Authorization: Bearer <token>
+- Body: {name, sku, category, reorder_point}
+- Response: {id, name, sku, ...}
+
+**PUT /api/products/:id**
+- Update product
+- Headers: Authorization: Bearer <token>
+- Body: {name, category, reorder_point}
+- Response: {id, name, sku, ...}
+
+**DELETE /api/products/:id**
+- Delete product
+- Headers: Authorization: Bearer <token>
+- Response: {message: string}
+
+---
+
+## Testing Credentials
+
+**Test User Account:**
 ```
-feat: Add new feature
-fix: Bug fix
-docs: Documentation update
-style: Code style change
-refactor: Code refactoring
-test: Test additions
-chore: Dev dependency update
+Email: admin@coreinventory.com
+Password: admin123
 ```
 
 ---
 
-## 📞 Contact & Support
+## Performance Targets
 
-- **GitHub:** https://github.com/ZEELJARIWALA/odoo_hackathon_indus_university_2026
-- **Issues:** Use GitHub Issues for bug reports
-- **Discussions:** Use GitHub Discussions for feature requests
-
----
-
-## 📄 License
-
-This project is created for Odoo Hackathon 2026.
+- API Response Time: < 500ms
+- Page Load Time: < 2 seconds
+- Database Query Time: < 100ms
+- Support 10,000+ products without performance degradation
 
 ---
 
-## 🎯 Next Steps
+## Success Metrics
 
-1. ✅ Initialize git repository
-2. ✅ Create project structure
-3. ⏳ Setup backend server
-4. ⏳ Create database schema
-5. ⏳ Build API endpoints
-6. ⏳ Develop frontend UI
-7. ⏳ Implement Smart Advisor
-8. ⏳ Integration testing
-9. ⏳ Deployment
+1. **Functionality:** All MVP features working
+2. **Performance:** Response time < 500ms
+3. **Usability:** User satisfaction score > 4.5/5
+4. **Data Accuracy:** 100% audit trail
+5. **Scalability:** Support 100+ warehouses, 10k+ products
 
 ---
 
-**Last Updated:** March 14, 2026  
-**Status:** 🚀 MVP Development in Progress
+## Team
+
+- **Developer:** ZEEL JARIWALA
+- **Duration:** March 10 - April 7, 2026
+- **Hackathon:** Odoo Hackathon - Indus University 2026
+
+---
+
+## License
+
+This project is proprietary to ZEEL JARIWALA for Indus University Hackathon 2026.
+
+---
+
+## Support
+
+For issues or questions, contact the development team through GitHub Issues.
+
+---
+
+Last Updated: March 14, 2026  
+Status: MVP Development in Progress
