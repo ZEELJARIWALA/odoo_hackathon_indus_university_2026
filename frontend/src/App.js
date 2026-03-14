@@ -11,10 +11,18 @@ import OperationDetailPage from "./pages/OperationDetailPage";
 import StockPage from "./pages/StockPage";
 import MoveHistoryPage from "./pages/MoveHistoryPage";
 import SettingsPage from "./pages/SettingsPage";
-import { setupMockAPI } from "./services/mockAPI";
 
-// Setup mock API for frontend development (no backend needed)
-setupMockAPI(axios);
+// Setup axios interceptor to attach JWT token to all requests
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {

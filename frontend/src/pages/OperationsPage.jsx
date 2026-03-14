@@ -11,7 +11,9 @@ import {
     Calendar,
     Package,
     AlertCircle,
-    User
+    User,
+    X,
+    Trash2
 } from "lucide-react";
 
 const OperationsPage = ({ type = "receipt" }) => {
@@ -20,9 +22,21 @@ const OperationsPage = ({ type = "receipt" }) => {
     const [viewType, setViewType] = useState("list");
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [products, setProducts] = useState([]);
+    const [receiptItems, setReceiptItems] = useState([{ product_id: '', quantity: '' }]);
+    const [receiptData, setReceiptData] = useState({
+        reference: '',
+        supplier: '',
+        scheduled_date: new Date().toISOString().split('T')[0],
+        notes: ''
+    });
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
     useEffect(() => {
         fetchOperations();
+        fetchProducts();
     }, [type]);
 
     const fetchOperations = async () => {
@@ -44,6 +58,77 @@ const OperationsPage = ({ type = "receipt" }) => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const fetchProducts = async () => {
+        try {
+            const res = await axios.get("http://localhost:5000/api/products");
+            setProducts(res.data || []);
+        } catch (err) {
+            console.error("Error fetching products:", err);
+        }
+    };
+
+    const handleCreateReceipt = async (e) => {
+        e.preventDefault();
+        setError('');
+        setSuccess('');
+
+        // Validation
+        if (!receiptData.reference.trim()) {
+            setError('Receipt reference is required');
+            return;
+        }
+        if (receiptItems.some(item => !item.product_id || !item.quantity)) {
+            setError('All items must have product and quantity');
+            return;
+        }
+
+        try {
+            // Create stock moves for each item
+            for (const item of receiptItems) {
+                await axios.post('http://localhost:5000/api/stock-moves', {
+                    product_id: parseInt(item.product_id),
+                    from_location_id: 1, // Supplier location
+                    to_location_id: 1, // Warehouse location
+                    quantity: parseInt(item.quantity),
+                    type: 'receipt',
+                    reference: receiptData.reference,
+                    supplier: receiptData.supplier,
+                    notes: receiptData.notes
+                });
+            }
+
+            setSuccess('✅ Receipt created successfully! Stock updated.');
+            setTimeout(() => {
+                setShowCreateModal(false);
+                setSuccess('');
+                setReceiptData({
+                    reference: '',
+                    supplier: '',
+                    scheduled_date: new Date().toISOString().split('T')[0],
+                    notes: ''
+                });
+                setReceiptItems([{ product_id: '', quantity: '' }]);
+                fetchOperations();
+            }, 1500);
+        } catch (err) {
+            setError(err.response?.data?.error || 'Failed to create receipt');
+        }
+    };
+
+    const addReceiptItem = () => {
+        setReceiptItems([...receiptItems, { product_id: '', quantity: '' }]);
+    };
+
+    const removeReceiptItem = (index) => {
+        setReceiptItems(receiptItems.filter((_, i) => i !== index));
+    };
+
+    const updateReceiptItem = (index, field, value) => {
+        const updated = [...receiptItems];
+        updated[index][field] = value;
+        setReceiptItems(updated);
     };
 
     const filteredOps = operations.filter(op => {
@@ -97,7 +182,9 @@ const OperationsPage = ({ type = "receipt" }) => {
                             </p>
                         </div>
                     </div>
-                    <button className={`px-6 py-3 ${type === "receipt" ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"} text-white rounded-xl font-black uppercase text-sm flex items-center gap-2 transition-all shadow-lg`}>
+                    <button 
+                        onClick={() => setShowCreateModal(true)}
+                        className={`px-6 py-3 ${type === "receipt" ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"} text-white rounded-xl font-black uppercase text-sm flex items-center gap-2 transition-all shadow-lg`}>
                         <Plus size={18} /> NEW
                     </button>
                 </div>
@@ -233,6 +320,155 @@ const OperationsPage = ({ type = "receipt" }) => {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Create Receipt Modal */}
+            {showCreateModal && type === "receipt" && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center p-6 border-b border-slate-200 sticky top-0 bg-white">
+                            <h2 className="text-xl font-bold text-slate-800">Create New Receipt</h2>
+                            <button 
+                                onClick={() => {
+                                    setShowCreateModal(false);
+                                    setError('');
+                                    setSuccess('');
+                                }}
+                                className="text-slate-400 hover:text-slate-600">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleCreateReceipt} className="p-6 space-y-4">
+                            {error && (
+                                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                                    {error}
+                                </div>
+                            )}
+
+                            {success && (
+                                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+                                    {success}
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-2">Receipt Reference *</label>
+                                    <input 
+                                        type="text"
+                                        placeholder="e.g., RCP-001"
+                                        value={receiptData.reference}
+                                        onChange={(e) => setReceiptData({...receiptData, reference: e.target.value})}
+                                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-2">Supplier</label>
+                                    <input 
+                                        type="text"
+                                        placeholder="Supplier name"
+                                        value={receiptData.supplier}
+                                        onChange={(e) => setReceiptData({...receiptData, supplier: e.target.value})}
+                                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Scheduled Date</label>
+                                <input 
+                                    type="date"
+                                    value={receiptData.scheduled_date}
+                                    onChange={(e) => setReceiptData({...receiptData, scheduled_date: e.target.value})}
+                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Notes</label>
+                                <textarea 
+                                    placeholder="Optional notes..."
+                                    value={receiptData.notes}
+                                    onChange={(e) => setReceiptData({...receiptData, notes: e.target.value})}
+                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm"
+                                    rows="2"
+                                />
+                            </div>
+
+                            <div className="border-t border-slate-200 pt-4">
+                                <div className="flex justify-between items-center mb-3">
+                                    <label className="block text-sm font-semibold text-slate-700">Receipt Items *</label>
+                                    <button 
+                                        type="button"
+                                        onClick={addReceiptItem}
+                                        className="text-green-600 hover:text-green-700 font-semibold text-sm flex items-center gap-1">
+                                        <Plus size={16} /> Add Item
+                                    </button>
+                                </div>
+
+                                <div className="space-y-3 max-h-64 overflow-y-auto">
+                                    {receiptItems.map((item, index) => (
+                                        <div key={index} className="flex gap-3 items-end p-3 border border-slate-200 rounded-lg bg-slate-50">
+                                            <div className="flex-1">
+                                                <label className="block text-xs font-semibold text-slate-600 mb-1">Product</label>
+                                                <select 
+                                                    value={item.product_id}
+                                                    onChange={(e) => updateReceiptItem(index, 'product_id', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm">
+                                                    <option value="">Select product...</option>
+                                                    {products.map(p => (
+                                                        <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div className="w-24">
+                                                <label className="block text-xs font-semibold text-slate-600 mb-1">Quantity</label>
+                                                <input 
+                                                    type="number"
+                                                    placeholder="0"
+                                                    value={item.quantity}
+                                                    onChange={(e) => updateReceiptItem(index, 'quantity', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm"
+                                                    min="1"
+                                                />
+                                            </div>
+
+                                            {receiptItems.length > 1 && (
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => removeReceiptItem(index)}
+                                                    className="text-red-500 hover:text-red-700 p-2">
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="flex space-x-3 pt-4">
+                                <button 
+                                    type="button"
+                                    onClick={() => {
+                                        setShowCreateModal(false);
+                                        setError('');
+                                        setSuccess('');
+                                    }}
+                                    className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-all font-medium">
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-medium">
+                                    Create Receipt
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
         </div>

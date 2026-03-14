@@ -62,6 +62,7 @@ const Navbar = () => {
 
   const menuItems = [
     { label: "Dashboard", path: "/", icon: LayoutDashboard },
+    { label: "Products", path: "/products", icon: Package, desc: "Manage Products" },
     { 
       label: "Operations", 
       icon: Repeat2,

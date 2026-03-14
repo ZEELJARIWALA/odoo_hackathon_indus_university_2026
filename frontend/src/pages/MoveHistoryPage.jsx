@@ -1,317 +1,272 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import {
-  History,
-  RefreshCw,
-  AlertTriangle,
-  MapPin,
-  ArrowDownCircle,
-  ArrowUpCircle,
-  Repeat2,
-  Search,
-  Calendar,
-  Clock,
-  List,
-  LayoutGrid,
-  Plus
-} from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { BookOpen, Search, Filter, TrendingUp, TrendingDown, ArrowRightLeft, Wrench, AlertCircle } from 'lucide-react';
 
 const MoveHistoryPage = () => {
-  const [moves, setMoves] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState("list"); // list, kanban
-  const [filters, setFilters] = useState({
-    search: "",
-    status: "all"
-  });
+    const [ledger, setLedger] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [typeFilter, setTypeFilter] = useState('all');
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+    useEffect(() => {
+        fetchLedger();
+    }, []);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get("http://localhost:5000/api/stock-moves");
-      setMoves(response.data || []);
-    } catch (err) {
-      console.error("Error fetching stock moves:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchLedger = async () => {
+        setLoading(true);
+        try {
+            const res = await axios.get('http://localhost:5000/api/stock-ledger');
+            setLedger(res.data || []);
+        } catch (err) {
+            console.error('Error fetching ledger:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  const filteredMoves = moves.filter(move => {
-    const matchesSearch = 
-      (move.reference || "").toLowerCase().includes(filters.search.toLowerCase()) ||
-      (move.contact || "").toLowerCase().includes(filters.search.toLowerCase()) ||
-      (move.tracking_number || "").toLowerCase().includes(filters.search.toLowerCase());
-    const matchesStatus = filters.status === "all" || move.status?.toLowerCase() === filters.status.toLowerCase();
-    return matchesSearch && matchesStatus;
-  });
+    const getMovementIcon = (type) => {
+        switch(type) {
+            case 'receipt': return <TrendingUp size={16} className="text-green-500" />;
+            case 'delivery': return <TrendingDown size={16} className="text-red-500" />;
+            case 'transfer': return <ArrowRightLeft size={16} className="text-blue-500" />;
+            case 'adjustment': return <Wrench size={16} className="text-amber-500" />;
+            default: return <AlertCircle size={16} className="text-slate-500" />;
+        }
+    };
 
-  const getMoveType = (type) => {
-    const lowerType = type?.toLowerCase();
-    if (lowerType === "receipt" || lowerType === "in") {
-      return { label: "In", icon: ArrowDownCircle, color: "bg-green-50 text-green-700 border-green-200" };
-    } else if (lowerType === "delivery" || lowerType === "out") {
-      return { label: "Out", icon: ArrowUpCircle, color: "bg-red-50 text-red-700 border-red-200" };
-    } else if (lowerType === "adjustment") {
-      return { label: "Adjustment", icon: Repeat2, color: "bg-purple-50 text-purple-700 border-purple-200" };
-    }
-    return { label: "Move", icon: History, color: "bg-slate-50 text-slate-700 border-slate-200" };
-  };
+    const getMovementColor = (type) => {
+        switch(type) {
+            case 'receipt': return 'bg-green-50 border-green-200';
+            case 'delivery': return 'bg-red-50 border-red-200';
+            case 'transfer': return 'bg-blue-50 border-blue-200';
+            case 'adjustment': return 'bg-amber-50 border-amber-200';
+            default: return 'bg-slate-50 border-slate-200';
+        }
+    };
 
-  const groupByReference = () => {
-    const grouped = {};
-    filteredMoves.forEach(move => {
-      const ref = move.reference || "N/A";
-      if (!grouped[ref]) {
-        grouped[ref] = [];
-      }
-      grouped[ref].push(move);
+    const getMovementLabel = (type) => {
+        switch(type) {
+            case 'receipt': return 'Receipt (Incoming)';
+            case 'delivery': return 'Delivery (Outgoing)';
+            case 'transfer': return 'Transfer (Internal)';
+            case 'adjustment': return 'Adjustment (Count)';
+            default: return 'Unknown';
+        }
+    };
+
+    const formatQuantity = (qty) => {
+        if (qty > 0) return `+${qty}`;
+        return String(qty);
+    };
+
+    const getQuantityColor = (qty) => {
+        if (qty > 0) return 'text-green-600';
+        if (qty < 0) return 'text-red-600';
+        return 'text-slate-600';
+    };
+
+    // Filter ledger
+    const filteredLedger = ledger.filter(entry => {
+        const matchesSearch = 
+            (entry.product_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (entry.reference || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (entry.reason || '').toLowerCase().includes(searchTerm.toLowerCase());
+        
+        const matchesType = typeFilter === 'all' || entry.movement_type === typeFilter;
+        
+        return matchesSearch && matchesType;
     });
-    return grouped;
-  };
 
-  const statuses = ["Draft", "Waiting", "Ready", "Done"];
-
-  return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center">
-            <History size={28} className="text-indigo-600" />
-          </div>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase italic">
-                Move History
-              </h1>
-              <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-black rounded-lg">NEW</span>
+    return (
+        <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-500">
+            {/* Header */}
+            <div className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div className="flex items-center space-x-4">
+                    <div className="bg-purple-100 p-3 rounded-lg text-purple-600">
+                        <BookOpen size={24} />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Stock Ledger</h1>
+                        <p className="text-slate-500 text-sm italic">Complete audit trail of all inventory movements</p>
+                    </div>
+                </div>
+                <button 
+                    onClick={fetchLedger}
+                    className="flex items-center space-x-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold transition-all">
+                    <Filter size={18} />
+                    <span>Refresh</span>
+                </button>
             </div>
-            <p className="text-slate-500 text-sm font-bold uppercase tracking-widest mt-1">
-              Track all stock movements & transfers
-            </p>
-          </div>
-        </div>
 
-        {/* View Toggle & Actions */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setViewMode("list")}
-            className={`p-2 rounded-lg transition-all ${
-              viewMode === "list"
-                ? "bg-indigo-600 text-white shadow-md"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-            title="List View"
-          >
-            <List size={20} />
-          </button>
-          <button
-            onClick={() => setViewMode("kanban")}
-            className={`p-2 rounded-lg transition-all ${
-              viewMode === "kanban"
-                ? "bg-indigo-600 text-white shadow-md"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-            title="Kanban View"
-          >
-            <LayoutGrid size={20} />
-          </button>
-          <button className="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-all ml-2">
-            <Plus size={20} />
-          </button>
-          <button
-            onClick={fetchData}
-            className="p-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition-all"
-          >
-            <RefreshCw size={20} className={loading ? "animate-spin" : ""} />
-          </button>
-        </div>
-      </div>
+            {/* Filters */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex-1 relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Search by product, reference, or reason..."
+                            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
 
-      {/* Search & Filters */}
-      <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/40">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input
-              type="text"
-              placeholder="Search reference, contact, or tracking..."
-              className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none placeholder:text-slate-400"
-              value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-            />
-          </div>
+                    <select 
+                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                        value={typeFilter}
+                        onChange={(e) => setTypeFilter(e.target.value)}
+                    >
+                        <option value="all">All Types</option>
+                        <option value="receipt">Receipts (Incoming)</option>
+                        <option value="delivery">Deliveries (Outgoing)</option>
+                        <option value="transfer">Transfers (Internal)</option>
+                        <option value="adjustment">Adjustments (Count)</option>
+                    </select>
+                </div>
+            </div>
 
-          <select
-            className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none appearance-none cursor-pointer"
-            value={filters.status}
-            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-          >
-            <option value="all">All Status</option>
-            {statuses.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </div>
-      </div>
-
-      {/* LIST VIEW */}
-      {viewMode === "list" && (
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/40 overflow-hidden">
-          <div className="p-8 border-b border-slate-100">
-            <h2 className="text-2xl font-black text-slate-900 uppercase italic tracking-tight">
-              Move History - List View
-            </h2>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">
-              Showing {filteredMoves.length} movements
-            </p>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="px-8 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Reference</th>
-                  <th className="px-8 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Date</th>
-                  <th className="px-8 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Contact</th>
-                  <th className="px-8 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">From</th>
-                  <th className="px-8 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">To</th>
-                  <th className="px-8 py-4 text-xs font-black text-slate-400 uppercase tracking-wider text-center">Quantity</th>
-                  <th className="px-8 py-4 text-xs font-black text-slate-400 uppercase tracking-wider text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {loading ? (
-                  <tr>
-                    <td colSpan="7" className="py-12 text-center">
-                      <RefreshCw className="animate-spin text-indigo-600 mx-auto mb-2" size={32} />
-                      <p className="text-slate-500 font-bold">Loading movements...</p>
-                    </td>
-                  </tr>
-                ) : filteredMoves.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" className="py-16 text-center">
-                      <AlertTriangle className="mx-auto text-slate-300 mb-3" size={40} />
-                      <p className="text-slate-400 font-bold text-sm">No stock movements found</p>
-                    </td>
-                  </tr>
-                ) : (
-                  filteredMoves.map((move) => {
-                    const moveInfo = getMoveType(move.type);
-                    const MoveIcon = moveInfo.icon;
-                    return (
-                      <tr key={move.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-8 py-5">
-                          <p className="font-bold text-slate-900">{move.reference || move.tracking_number}</p>
-                        </td>
-                        <td className="px-8 py-5">
-                          <p className="text-sm text-slate-700 font-medium">{move.date || "N/A"}</p>
-                        </td>
-                        <td className="px-8 py-5">
-                          <p className="text-sm font-semibold text-indigo-600">{move.contact || "N/A"}</p>
-                        </td>
-                        <td className="px-8 py-5">
-                          <div className="flex items-center gap-2">
-                            <MapPin size={14} className="text-slate-400" />
-                            <span className="text-sm font-medium text-slate-700">{move.warehouse_from || move.warehouse || "N/A"}</span>
-                          </div>
-                        </td>
-                        <td className="px-8 py-5">
-                          <div className="flex items-center gap-2">
-                            <MapPin size={14} className="text-slate-400" />
-                            <span className="text-sm font-medium text-slate-700">{move.warehouse_to || move.warehouse || "N/A"}</span>
-                          </div>
-                        </td>
-                        <td className="px-8 py-5 text-center">
-                          <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold">
-                            {move.quantity || 0}
-                          </span>
-                        </td>
-                        <td className="px-8 py-5 text-center">
-                          <span className={`px-3 py-1 rounded-full text-xs font-black border flex items-center justify-center gap-1 mx-auto w-fit ${moveInfo.color}`}>
-                            {move.status}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* KANBAN VIEW */}
-      {viewMode === "kanban" && (
-        <div className="space-y-6">
-          {statuses.map(status => {
-            const statusMoves = filteredMoves.filter(m => m.status?.toLowerCase() === status.toLowerCase());
-            return (
-              <div key={status} className="bg-white rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/40 overflow-hidden">
-                <div className="p-6 border-b border-slate-100 bg-slate-50">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight italic">{status}</h3>
-                    <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold">
-                      {statusMoves.length}
-                    </span>
-                  </div>
+            {/* Ledger Table */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                        <thead className="bg-slate-50 border-b border-slate-200">
+                            <tr>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Type</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Product</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Reference</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Qty Change</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">From → To</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Reason</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">User</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Date & Time</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="8" className="px-6 py-12 text-center text-slate-400">
+                                        Loading ledger...
+                                    </td>
+                                </tr>
+                            ) : filteredLedger.length > 0 ? filteredLedger.map((entry) => (
+                                <tr key={entry.id} className={`border border-slate-200 hover:bg-slate-50 transition-colors ${getMovementColor(entry.movement_type)}`}>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center space-x-2">
+                                            {getMovementIcon(entry.movement_type)}
+                                            <span className="font-semibold text-slate-800 text-xs">{getMovementLabel(entry.movement_type)}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div>
+                                            <div className="font-semibold text-slate-800 text-sm">{entry.product_name}</div>
+                                            <div className="text-xs text-slate-500">{entry.sku}</div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="font-mono text-sm font-semibold text-slate-700 bg-slate-100 px-3 py-1 rounded inline-block">
+                                            {entry.reference}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className={`font-bold text-lg ${getQuantityColor(entry.quantity_change)}`}>
+                                            {formatQuantity(entry.quantity_change)}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm">
+                                        <div className="flex items-center gap-2">
+                                            {entry.from_location && (
+                                                <>
+                                                    <span className="bg-slate-100 px-2 py-1 rounded text-xs">{entry.from_location}</span>
+                                                    <ArrowRightLeft size={14} className="text-slate-400" />
+                                                </>
+                                            )}
+                                            {entry.to_location && (
+                                                <span className="bg-slate-100 px-2 py-1 rounded text-xs">{entry.to_location}</span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-slate-600 max-w-xs truncate" title={entry.reason}>
+                                        {entry.reason || '—'}
+                                    </td>
+                                    <td className="px-6 py-4 text-sm">
+                                        <div className="text-slate-700 font-medium">
+                                            {entry.created_by_user || 'System'}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-xs text-slate-600 whitespace-nowrap">
+                                        {new Date(entry.created_at).toLocaleString()}
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan="8" className="px-6 py-12 text-center text-slate-400 italic">
+                                        No stock movements found
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
 
-                <div className="p-6 space-y-4">
-                  {statusMoves.length === 0 ? (
-                    <p className="text-slate-500 text-sm italic text-center py-8">No movements in this status</p>
-                  ) : (
-                    statusMoves.map(move => {
-                      const moveInfo = getMoveType(move.type);
-                      const MoveIcon = moveInfo.icon;
-                      return (
-                        <div
-                          key={move.id}
-                          className="p-4 border border-slate-200 rounded-lg hover:border-indigo-400 hover:shadow-md transition-all cursor-pointer bg-gradient-to-r from-white to-slate-50"
-                        >
-                          <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <p className="font-bold text-slate-900">{move.reference || move.tracking_number}</p>
-                              <p className="text-xs text-slate-500 font-medium">{move.contact}</p>
-                            </div>
-                            <span className={`px-2 py-1 rounded text-xs font-black border ${moveInfo.color}`}>
-                              {moveInfo.label}
-                            </span>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
-                            <div className="flex items-center gap-1">
-                              <MapPin size={12} className="text-slate-400" />
-                              <span className="text-slate-700 font-medium">{move.warehouse_from || move.warehouse || "N/A"}</span>
-                            </div>
-                            <div className="flex items-center gap-1 justify-end">
-                              <span className="text-slate-700 font-medium">{move.warehouse_to || move.warehouse || "N/A"}</span>
-                              <MapPin size={12} className="text-slate-400" />
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between pt-3 border-t border-slate-200">
-                            <span className="text-xs text-slate-500">{move.date || "N/A"}</span>
-                            <span className="px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs font-bold">
-                              {move.quantity || 0} units
-                            </span>
-                          </div>
+                {/* Footer Stats */}
+                <div className="p-4 bg-slate-50 border-t border-slate-200 flex flex-col md:flex-row md:justify-between items-start md:items-center gap-4 text-sm text-slate-600 italic">
+                    <span>Total Movements: {filteredLedger.length}</span>
+                    <div className="flex flex-wrap gap-4">
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span>Receipts: {filteredLedger.filter(e => e.movement_type === 'receipt').length}</span>
                         </div>
-                      );
-                    })
-                  )}
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                            <span>Deliveries: {filteredLedger.filter(e => e.movement_type === 'delivery').length}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                            <span>Transfers: {filteredLedger.filter(e => e.movement_type === 'transfer').length}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                            <span>Adjustments: {filteredLedger.filter(e => e.movement_type === 'adjustment').length}</span>
+                        </div>
+                    </div>
                 </div>
-              </div>
-            );
-          })}
+            </div>
+
+            {/* Legend */}
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <h3 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                    <AlertCircle size={18} /> Movement Types Explained
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                    <div>
+                        <div className="flex items-center gap-2 font-semibold text-green-700 mb-1">
+                            <TrendingUp size={14} /> Receipt
+                        </div>
+                        <p className="text-slate-600">Incoming goods from supplier. Stock +X</p>
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2 font-semibold text-red-700 mb-1">
+                            <TrendingDown size={14} /> Delivery
+                        </div>
+                        <p className="text-slate-600">Outgoing goods to customer. Stock -X</p>
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2 font-semibold text-blue-700 mb-1">
+                            <ArrowRightLeft size={14} /> Transfer
+                        </div>
+                        <p className="text-slate-600">Move between locations. Total stock unchanged</p>
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2 font-semibold text-amber-700 mb-1">
+                            <Wrench size={14} /> Adjustment
+                        </div>
+                        <p className="text-slate-600">Fix physical count vs system</p>
+                    </div>
+                </div>
+            </div>
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default MoveHistoryPage;
